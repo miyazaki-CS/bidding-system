@@ -17,10 +17,114 @@ class SimpleDatabaseManager:
         self.ensure_database_exists()
     
     def ensure_database_exists(self):
-        """データベースファイルが存在しない場合は作成"""
-        if not os.path.exists(self.db_path):
-            conn = sqlite3.connect(self.db_path)
+        """データベースファイルとテーブルが存在しない場合は作成"""
+        conn = sqlite3.connect(self.db_path)
+        try:
+            cursor = conn.cursor()
+            
+            # 必要なテーブルを作成
+            self.create_tables(cursor)
+            self.insert_default_data(cursor)
+            
+            conn.commit()
+        finally:
             conn.close()
+    
+    def create_tables(self, cursor):
+        """必要なテーブルを作成"""
+        
+        # procurement_entries テーブル
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS procurement_entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            organization TEXT,
+            region TEXT,
+            budget_amount INTEGER,
+            published_date DATE,
+            deadline_date DATE,
+            source_url TEXT,
+            source_type TEXT,
+            relevance_score INTEGER DEFAULT 0,
+            keywords_matched TEXT DEFAULT '[]',
+            processed BOOLEAN DEFAULT FALSE,
+            notified BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+        
+        # filter_keywords テーブル
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS filter_keywords (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            keyword TEXT NOT NULL,
+            category TEXT DEFAULT 'include',
+            weight INTEGER DEFAULT 1,
+            active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+        
+        # notification_history テーブル
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notification_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_id INTEGER,
+            notification_type TEXT,
+            recipient TEXT,
+            success BOOLEAN DEFAULT TRUE,
+            error_message TEXT,
+            sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (entry_id) REFERENCES procurement_entries (id)
+        )
+        """)
+        
+        # system_logs テーブル
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS system_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            level TEXT,
+            message TEXT,
+            module TEXT,
+            additional_data TEXT,
+            execution_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+    
+    def insert_default_data(self, cursor):
+        """デフォルトデータを挿入"""
+        
+        # デフォルトキーワードを挿入
+        default_keywords = [
+            ('データ入力', 'include', 10),
+            ('データ入力案件', 'include', 10),
+            ('入力作業', 'include', 8),
+            ('キッティング', 'include', 9),
+            ('PC設定', 'include', 7),
+            ('コールセンター', 'include', 8),
+            ('電話受付', 'include', 6),
+            ('事務業務', 'include', 5),
+            ('清掃', 'exclude', -10),
+            ('警備', 'exclude', -8),
+            ('建設', 'exclude', -8),
+            ('工事', 'exclude', -8),
+            ('修繕', 'exclude', -5),
+            ('保守', 'exclude', -3)
+        ]
+        
+        # 既存のキーワードをチェックして重複を避ける
+        for keyword, category, weight in default_keywords:
+            cursor.execute(
+                "SELECT COUNT(*) FROM filter_keywords WHERE keyword = ? AND category = ?",
+                (keyword, category)
+            )
+            if cursor.fetchone()[0] == 0:
+                cursor.execute(
+                    "INSERT INTO filter_keywords (keyword, category, weight) VALUES (?, ?, ?)",
+                    (keyword, category, weight)
+                )
     
     def get_connection(self):
         """データベース接続を取得"""
