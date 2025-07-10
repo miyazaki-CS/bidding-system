@@ -75,6 +75,6 @@ jobs:
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'
-　    run: |
-　      # GitHub Pages will automatically deploy from docs folder
-　      echo "Dashboard updated in docs folder"
+      run: |
+        # GitHub Pages will automatically deploy from docs folder
+        echo "Dashboard updated in docs folder"
