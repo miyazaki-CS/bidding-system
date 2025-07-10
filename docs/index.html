@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入札案件自動収集システム - ダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .entries-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .entries-table th,
+        .entries-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .entries-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .entries-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .priority-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+
+        .priority-low {
+            color: #6c757d;
+        }
+
+        .region-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.875rem;
+        }
+
+        .budget {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-active { background: #28a745; }
+        .status-pending { background: #ffc107; }
+        .status-error { background: #dc3545; }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .entries-table {
+                font-size: 0.875rem;
+            }
+            
+            .entries-table th,
+            .entries-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <div class="header">
+            <h1>📋 入札案件自動収集システム</h1>
+            <p>リアルタイムで入札案件を監視・収集・分析</p>
+            <p id="lastUpdate">最終更新: 読み込み中...</p>
+        </div>
+
+        <!-- 統計カード -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalEntries">-</div>
+                <div class="stat-label">総案件数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="highPriorityEntries">-</div>
+                <div class="stat-label">高優先度案件</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayEntries">-</div>
+                <div class="stat-label">本日追加</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="systemStatus">
+                    <span class="status-indicator status-pending"></span>
+                </div>
+                <div class="stat-label">システム状態</div>
+            </div>
+        </div>
+
+        <!-- 案件一覧 -->
+        <div class="section">
+            <h2>📊 案件一覧</h2>
+            
+            <div class="controls">
+                <input type="text" class="search-box" id="searchBox" placeholder="案件タイトル、発注機関で検索...">
+                <button class="btn" onclick="refreshData()">🔄 更新</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 エクスポート</button>
+                <select class="btn" id="priorityFilter">
+                    <option value="">全ての優先度</option>
+                    <option value="high">高優先度のみ</option>
+                    <option value="medium">中優先度のみ</option>
+                    <option value="low">低優先度のみ</option>
+                </select>
+            </div>
+
+            <div id="entriesContainer">
+                <div class="loading">データを読み込み中...</div>
+            </div>
+        </div>
+
+        <!-- フッター -->
+        <div class="footer">
+            <p>入札案件自動収集システム v1.0 | GitHub Actions で24時間365日稼働</p>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let allEntries = [];
+        let filteredEntries = [];
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupEventListeners();
+            
+            // 自動更新（5分間隔）
+            setInterval(refreshData, 5 * 60 * 1000);
+        });
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            const searchBox = document.getElementById('searchBox');
+            const priorityFilter = document.getElementById('priorityFilter');
+            
+            searchBox.addEventListener('input', filterEntries);
+            priorityFilter.addEventListener('change', filterEntries);
+        }
+
+        // データ読み込み
+        async function loadData() {
+            try {
+                // 実際のデータをJSONファイルから読み込み
+                const response = await fetch('dashboard_data.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                allEntries = data.entries || [];
+                updateStatistics(data.stats || {});
+                filterEntries();
+                
+                // 最終更新時刻を設定
+                if (data.last_updated) {
+                    const lastUpdate = new Date(data.last_updated);
+                    const formatted = lastUpdate.toLocaleString('ja-JP', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    document.getElementById('lastUpdate').textContent = `最終更新: ${formatted}`;
+                }
+                
+                // システム状態を設定
+                const systemStatus = data.system_info?.system_status || 'active';
+                updateSystemStatus(systemStatus);
+                
+            } catch (error) {
+                console.error('データ読み込みエラー:', error);
+                
+                // エラー時はサンプルデータで表示
+                console.log('サンプルデータで表示します');
+                const sampleData = generateSampleData();
+                allEntries = sampleData.entries;
+                
+                updateStatistics(sampleData.stats);
+                filterEntries();
+                updateLastUpdateTime();
+                updateSystemStatus('error');
+            }
+        }
+
+        // サンプルデータ生成
+        function generateSampleData() {
+            const entries = [
+                {
+                    id: 1,
+                    title: "コールセンター業務委託",
+                    organization: "○○市役所",
+                    region: "東京都",
+                    relevance_score: 85,
+                    budget_amount: 5000000,
+                    deadline_date: "2025-08-01",
+                    published_date: "2025-07-10",
+                    source_url: "https://example.com/bid/1",
+                    created_at: "2025-07-10 08:00:00"
+                },
+                {
+                    id: 2,
+                    title: "データ入力業務委託",
+                    organization: "△△県庁",
+                    region: "神奈川県",
+                    relevance_score: 75,
+                    budget_amount: 3000000,
+                    deadline_date: "2025-07-25",
+                    published_date: "2025-07-09",
+                    source_url: "https://example.com/bid/2",
+                    created_at: "2025-07-09 14:30:00"
+                },
+                {
+                    id: 3,
+                    title: "PC設定・キッティング業務",
+                    organization: "□□市教育委員会",
+                    region: "大阪府",
+                    relevance_score: 80,
+                    budget_amount: 8000000,
+                    deadline_date: "2025-08-15",
+                    published_date: "2025-07-10",
+                    source_url: "https://example.com/bid/3",
+                    created_at: "2025-07-10 12:15:00"
+                },
+                {
+                    id: 4,
+                    title: "システム運用保守業務",
+                    organization: "◇◇市役所",
+                    region: "愛知県",
+                    relevance_score: 70,
+                    budget_amount: 12000000,
+                    deadline_date: "2025-08-20",
+                    published_date: "2025-07-08",
+                    source_url: "https://example.com/bid/4",
+                    created_at: "2025-07-08 16:45:00"
+                },
+                {
+                    id: 5,
+                    title: "事務業務アウトソーシング",
+                    organization: "▽▽町役場",
+                    region: "埼玉県",
+                    relevance_score: 65,
+                    budget_amount: 2500000,
+                    deadline_date: "2025-07-30",
+                    published_date: "2025-07-07",
+                    source_url: "https://example.com/bid/5",
+                    created_at: "2025-07-07 10:20:00"
+                }
+            ];
+
+            const stats = {
+                total_entries: entries.length,
+                high_priority: entries.filter(e => e.relevance_score >= 80).length,
+                today_entries: entries.filter(e => e.created_at.includes('2025-07-10')).length,
+                processing_time: 15.2
+            };
+
+            return { entries, stats };
+        }
+
+        // 統計更新
+        function updateStatistics(stats) {
+            document.getElementById('totalEntries').textContent = stats.total_entries;
+            document.getElementById('highPriorityEntries').textContent = stats.high_priority;
+            document.getElementById('todayEntries').textContent = stats.today_entries;
+        }
+
+        // フィルタリング
+        function filterEntries() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            filteredEntries = allEntries.filter(entry => {
+                // 検索条件
+                const matchesSearch = entry.title.toLowerCase().includes(searchTerm) ||
+                                    entry.organization.toLowerCase().includes(searchTerm);
+                
+                // 優先度フィルタ
+                const matchesPriority = !priorityFilter || getPriorityLevel(entry.relevance_score) === priorityFilter;
+                
+                return matchesSearch && matchesPriority;
+            });
+            
+            renderEntries();
+        }
+
+        // 優先度レベル取得
+        function getPriorityLevel(score) {
+            if (score >= 80) return 'high';
+            if (score >= 60) return 'medium';
+            return 'low';
+        }
+
+        // 案件一覧レンダリング
+        function renderEntries() {
+            const container = document.getElementById('entriesContainer');
+            
+            if (filteredEntries.length === 0) {
+                container.innerHTML = '<div class="loading">該当する案件が見つかりません</div>';
+                return;
+            }
+            
+            const table = `
+                <table class="entries-table">
+                    <thead>
+                        <tr>
+                            <th>案件名</th>
+                            <th>発注機関</th>
+                            <th>地域</th>
+                            <th>適合度</th>
+                            <th>予算</th>
+                            <th>締切</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredEntries.map(renderEntryRow).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = table;
+        }
+
+        // 案件行レンダリング
+        function renderEntryRow(entry) {
+            const priorityClass = getPriorityClass(entry.relevance_score);
+            const formattedBudget = formatBudget(entry.budget_amount);
+            
+            return `
+                <tr>
+                    <td>
+                        <strong>${entry.title}</strong>
+                        <br>
+                        <small style="color: #666;">追加: ${formatDate(entry.created_at)}</small>
+                    </td>
+                    <td>${entry.organization}</td>
+                    <td><span class="region-tag">${entry.region}</span></td>
+                    <td><span class="${priorityClass}">${entry.relevance_score}点</span></td>
+                    <td><span class="budget">${formattedBudget}</span></td>
+                    <td>${entry.deadline_date}</td>
+                    <td>
+                        <button class="btn" onclick="viewDetails('${entry.source_url}')" style="padding: 0.5rem; font-size: 0.875rem;">
+                            詳細
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // 優先度クラス取得
+        function getPriorityClass(score) {
+            if (score >= 80) return 'priority-high';
+            if (score >= 60) return 'priority-medium';
+            return 'priority-low';
+        }
+
+        // 予算フォーマット
+        function formatBudget(amount) {
+            if (!amount) return '-';
+            return new Intl.NumberFormat('ja-JP', {
+                style: 'currency',
+                currency: 'JPY',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // 日付フォーマット
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ja-JP', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 詳細表示
+        function viewDetails(url) {
+            if (url) {
+                window.open(url, '_blank');
+            } else {
+                alert('詳細URLが設定されていません');
+            }
+        }
+
+        // データ更新
+        function refreshData() {
+            document.getElementById('entriesContainer').innerHTML = '<div class="loading">データを更新中...</div>';
+            updateSystemStatus('pending');
+            
+            setTimeout(() => {
+                loadData();
+            }, 1000);
+        }
+
+        // データエクスポート
+        function exportData() {
+            const csvContent = generateCSV(filteredEntries);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `入札案件_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // CSV生成
+        function generateCSV(entries) {
+            const headers = ['案件名', '発注機関', '地域', '適合度', '予算', '締切', '公開日', 'URL'];
+            const rows = entries.map(entry => [
+                entry.title,
+                entry.organization,
+                entry.region,
+                entry.relevance_score,
+                entry.budget_amount || '',
+                entry.deadline_date,
+                entry.published_date,
+                entry.source_url
+            ]);
+            
+            const csvContent = [headers, ...rows]
+                .map(row => row.map(field => `"${field}"`).join(','))
+                .join('\n');
+                
+            return '\ufeff' + csvContent; // BOM for Excel
+        }
+
+        // 最終更新時刻更新
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const formatted = now.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = `最終更新: ${formatted}`;
+        }
+
+        // システム状態更新
+        function updateSystemStatus(status) {
+            const indicator = document.querySelector('.status-indicator');
+            const statusText = document.getElementById('systemStatus');
+            
+            indicator.className = `status-indicator status-${status}`;
+            
+            const statusTexts = {
+                active: '正常稼働',
+                pending: '更新中',
+                error: 'エラー'
+            };
+            
+            statusText.innerHTML = `<span class="status-indicator status-${status}"></span>${statusTexts[status]}`;
+        }
+    </script>
+</body>
+</html>
