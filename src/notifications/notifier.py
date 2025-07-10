@@ -217,76 +217,120 @@ class NotificationService:
         return body
     
     def _create_teams_message(self, entries: List[Dict], title: str) -> Dict:
-        """Teamsメッセージ作成"""
-        text = f"{title}\n新しい入札案件 {len(entries)}件が見つかりました。"
+        """Teamsメッセージ作成（Workflows対応）"""
         
-        # Teams Adaptive Card形式
-        card = {
-            "@type": "MessageCard",
-            "@context": "http://schema.org/extensions",
-            "themeColor": "0076D7",
-            "summary": f"{title} - {len(entries)}件",
-            "sections": [
+        # 案件詳細テキスト作成
+        details_text = f"**{title}**\n\n新しい入札案件 {len(entries)}件が見つかりました。\n\n"
+        
+        for i, entry in enumerate(entries[:3], 1):
+            details_text += f"**案件 {i}:** {entry.get('title', '')}\n"
+            details_text += f"**発注機関:** {entry.get('organization', '')}\n"
+            details_text += f"**適合度:** {entry.get('relevance_score', 0)}点\n"
+            if entry.get('source_url'):
+                details_text += f"**詳細:** [{entry.get('source_url')}]({entry.get('source_url')})\n"
+            details_text += "\n---\n\n"
+        
+        if len(entries) > 3:
+            details_text += f"その他 {len(entries) - 3}件の案件があります。\n\n"
+        
+        details_text += f"**収集時刻:** {datetime.now().strftime('%Y/%m/%d %H:%M')}"
+        
+        # Teams Workflows対応形式
+        message = {
+            "type": "message",
+            "attachments": [
                 {
-                    "activityTitle": title,
-                    "activitySubtitle": f"{len(entries)}件の新着案件",
-                    "activityImage": "https://via.placeholder.com/64x64.png?text=📋",
-                    "facts": [
-                        {
-                            "name": "収集時刻",
-                            "value": datetime.now().strftime('%Y/%m/%d %H:%M')
-                        },
-                        {
-                            "name": "案件数",
-                            "value": f"{len(entries)}件"
-                        }
-                    ]
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                        "type": "AdaptiveCard",
+                        "version": "1.4",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": title,
+                                "weight": "Bolder",
+                                "size": "Large",
+                                "color": "Attention"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": f"新しい入札案件 **{len(entries)}件** が見つかりました",
+                                "wrap": True,
+                                "spacing": "Medium"
+                            }
+                        ]
+                    }
                 }
             ]
         }
         
-        # 案件詳細を追加（最大3件）
-        for i, entry in enumerate(entries[:3]):
-            section = {
-                "activityTitle": f"案件 {i+1}: {entry.get('title', '')}",
+        # 案件詳細を追加
+        for i, entry in enumerate(entries[:3], 1):
+            fact_set = {
+                "type": "FactSet",
                 "facts": [
                     {
-                        "name": "発注機関",
+                        "title": "タイトル:",
+                        "value": entry.get('title', '')[:100]
+                    },
+                    {
+                        "title": "発注機関:",
                         "value": entry.get('organization', '')
                     },
                     {
-                        "name": "地域",
-                        "value": entry.get('region', '')
-                    },
-                    {
-                        "name": "適合度",
+                        "title": "適合度:",
                         "value": f"{entry.get('relevance_score', 0)}点"
                     }
                 ]
             }
             
-            if entry.get('source_url'):
-                section["potentialAction"] = [
-                    {
-                        "@type": "OpenUri",
-                        "name": "詳細を見る",
-                        "targets": [
-                            {
-                                "os": "default",
-                                "uri": entry['source_url']
-                            }
-                        ]
-                    }
-                ]
+            if entry.get('deadline_date'):
+                fact_set["facts"].append({
+                    "title": "締切:",
+                    "value": entry.get('deadline_date')
+                })
             
-            card["sections"].append(section)
+            message["attachments"][0]["content"]["body"].append({
+                "type": "TextBlock",
+                "text": f"**案件 {i}**",
+                "weight": "Bolder",
+                "spacing": "Large"
+            })
+            
+            message["attachments"][0]["content"]["body"].append(fact_set)
+            
+            if entry.get('source_url'):
+                message["attachments"][0]["content"]["body"].append({
+                    "type": "ActionSet",
+                    "actions": [
+                        {
+                            "type": "Action.OpenUrl",
+                            "title": "詳細を見る",
+                            "url": entry.get('source_url')
+                        }
+                    ]
+                })
         
         if len(entries) > 3:
-            card["sections"].append({
-                "activityTitle": f"その他 {len(entries) - 3}件の案件があります"
+            message["attachments"][0]["content"]["body"].append({
+                "type": "TextBlock",
+                "text": f"その他 **{len(entries) - 3}件** の案件があります",
+                "wrap": True,
+                "spacing": "Large",
+                "color": "Good"
             })
         
-        return card
+        # 収集時刻を追加
+        message["attachments"][0]["content"]["body"].append({
+            "type": "TextBlock",
+            "text": f"収集時刻: {datetime.now().strftime('%Y/%m/%d %H:%M')}",
+            "size": "Small",
+            "color": "Dark",
+            "spacing": "Large"
+        })
+        
+        return message
     
     def _create_email_report_body(self, 
                                  all_entries: List[Dict], 
@@ -334,67 +378,130 @@ class NotificationService:
                                    high_priority: List[Dict],
                                    medium_priority: List[Dict],
                                    statistics: Dict) -> Dict:
-        """Teams日次レポートメッセージ作成"""
+        """Teams日次レポートメッセージ作成（Workflows対応）"""
         
-        # Teams Adaptive Card形式
-        card = {
-            "@type": "MessageCard",
-            "@context": "http://schema.org/extensions",
-            "themeColor": "28A745",
-            "summary": f"入札案件 日次レポート ({datetime.now().strftime('%m/%d')})",
-            "sections": [
+        # Teams Workflows対応形式
+        message = {
+            "type": "message",
+            "attachments": [
                 {
-                    "activityTitle": f"📊 入札案件 日次レポート",
-                    "activitySubtitle": datetime.now().strftime('%Y年%m月%d日'),
-                    "activityImage": "https://via.placeholder.com/64x64.png?text=📊",
-                    "facts": [
-                        {
-                            "name": "総収集件数",
-                            "value": f"{statistics.get('total_collected', 0)}件"
-                        },
-                        {
-                            "name": "処理完了件数",
-                            "value": f"{statistics.get('total_processed', 0)}件"
-                        },
-                        {
-                            "name": "高優先度案件",
-                            "value": f"{len(high_priority)}件"
-                        },
-                        {
-                            "name": "中優先度案件",
-                            "value": f"{len(medium_priority)}件"
-                        },
-                        {
-                            "name": "処理時間",
-                            "value": f"{statistics.get('processing_time', 0):.1f}秒"
-                        }
-                    ]
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                        "type": "AdaptiveCard",
+                        "version": "1.4",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "📊 入札案件 日次レポート",
+                                "weight": "Bolder",
+                                "size": "Large",
+                                "color": "Good"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": datetime.now().strftime('%Y年%m月%d日'),
+                                "weight": "Lighter",
+                                "spacing": "None"
+                            },
+                            {
+                                "type": "FactSet",
+                                "spacing": "Medium",
+                                "facts": [
+                                    {
+                                        "title": "総収集件数:",
+                                        "value": f"{statistics.get('total_collected', 0)}件"
+                                    },
+                                    {
+                                        "title": "処理完了件数:",
+                                        "value": f"{statistics.get('total_processed', 0)}件"
+                                    },
+                                    {
+                                        "title": "高優先度案件:",
+                                        "value": f"{len(high_priority)}件"
+                                    },
+                                    {
+                                        "title": "中優先度案件:",
+                                        "value": f"{len(medium_priority)}件"
+                                    },
+                                    {
+                                        "title": "処理時間:",
+                                        "value": f"{statistics.get('processing_time', 0):.1f}秒"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
             ]
         }
         
         # 高優先度案件の詳細
         if high_priority:
-            section = {
-                "activityTitle": "🚨 高優先度案件",
-                "facts": []
-            }
+            message["attachments"][0]["content"]["body"].append({
+                "type": "TextBlock",
+                "text": "🚨 高優先度案件",
+                "weight": "Bolder",
+                "spacing": "Large",
+                "color": "Attention"
+            })
             
-            for i, entry in enumerate(high_priority[:5]):  # 最大5件
-                section["facts"].append({
-                    "name": f"案件 {i+1}",
-                    "value": f"{entry.get('title', '')} ({entry.get('relevance_score', 0)}点)\n{entry.get('organization', '')}"
+            for i, entry in enumerate(high_priority[:5], 1):  # 最大5件
+                message["attachments"][0]["content"]["body"].append({
+                    "type": "FactSet",
+                    "facts": [
+                        {
+                            "title": f"案件 {i}:",
+                            "value": entry.get('title', '')[:80]
+                        },
+                        {
+                            "title": "発注機関:",
+                            "value": entry.get('organization', '')
+                        },
+                        {
+                            "title": "適合度:",
+                            "value": f"{entry.get('relevance_score', 0)}点"
+                        }
+                    ]
                 })
+                
+                if entry.get('source_url'):
+                    message["attachments"][0]["content"]["body"].append({
+                        "type": "ActionSet",
+                        "actions": [
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": f"案件 {i} 詳細を見る",
+                                "url": entry.get('source_url')
+                            }
+                        ]
+                    })
             
             if len(high_priority) > 5:
-                section["facts"].append({
-                    "name": "その他",
-                    "value": f"{len(high_priority) - 5}件の高優先度案件があります"
+                message["attachments"][0]["content"]["body"].append({
+                    "type": "TextBlock",
+                    "text": f"その他 **{len(high_priority) - 5}件** の高優先度案件があります",
+                    "wrap": True,
+                    "spacing": "Medium"
                 })
-            
-            card["sections"].append(section)
+        else:
+            message["attachments"][0]["content"]["body"].append({
+                "type": "TextBlock",
+                "text": "🚨 高優先度案件: 該当なし",
+                "weight": "Bolder",
+                "spacing": "Large"
+            })
         
-        return card
+        # 生成時刻を追加
+        message["attachments"][0]["content"]["body"].append({
+            "type": "TextBlock",
+            "text": f"レポート生成時刻: {datetime.now().strftime('%Y/%m/%d %H:%M')}",
+            "size": "Small",
+            "color": "Dark",
+            "spacing": "Large"
+        })
+        
+        return message
 
 # テスト用クラス
 class NotificationTester:
