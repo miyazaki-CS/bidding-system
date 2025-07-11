@@ -201,6 +201,211 @@
         .status-pending { background: #ffc107; }
         .status-error { background: #dc3545; }
 
+        /* 統計グラフ */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        /* 高度なフィルタ */
+        .advanced-filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            background: white;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* 結果情報 */
+        .results-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        /* アラート通知 */
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #faeeba;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* 拡張されたボタンスタイル */
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        /* フローティングアクションボタン */
+        .floating-actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: #667eea;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:hover {
+            background: #5a6fd8;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
         .footer {
             text-align: center;
             padding: 2rem;
@@ -263,20 +468,98 @@
             </div>
         </div>
 
+        <!-- 統計グラフ -->
+        <div class="section">
+            <h2>📈 統計分析</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>データソース別案件数</h3>
+                    <canvas id="sourceChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>適合度スコア分布</h3>
+                    <canvas id="scoreChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>地域別案件数</h3>
+                    <canvas id="regionChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>過去7日間の推移</h3>
+                    <canvas id="trendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高度なフィルタ -->
+        <div class="section">
+            <h2>🔍 高度なフィルタ</h2>
+            <div class="advanced-filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>データソース</label>
+                        <select id="sourceFilter" class="filter-select">
+                            <option value="">全てのソース</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>地域</label>
+                        <select id="regionFilter" class="filter-select">
+                            <option value="">全ての地域</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>期間</label>
+                        <select id="dateFilter" class="filter-select">
+                            <option value="">全期間</option>
+                            <option value="today">本日</option>
+                            <option value="week">過去7日</option>
+                            <option value="month">過去30日</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>予算範囲</label>
+                        <select id="budgetFilter" class="filter-select">
+                            <option value="">全ての予算</option>
+                            <option value="small">100万円未満</option>
+                            <option value="medium">100万円～1000万円</option>
+                            <option value="large">1000万円以上</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <button class="btn" onclick="applyFilters()">🔍 フィルタ適用</button>
+                    <button class="btn btn-secondary" onclick="resetFilters()">🔄 リセット</button>
+                    <button class="btn btn-secondary" onclick="saveFilterPreset()">💾 フィルタ保存</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 案件一覧 -->
         <div class="section">
             <h2>📊 案件一覧</h2>
             
             <div class="controls">
-                <input type="text" class="search-box" id="searchBox" placeholder="案件タイトル、発注機関で検索...">
+                <input type="text" class="search-box" id="searchBox" placeholder="案件タイトル、発注機関、キーワードで検索...">
                 <button class="btn" onclick="refreshData()">🔄 更新</button>
-                <button class="btn btn-secondary" onclick="exportData()">📥 エクスポート</button>
+                <button class="btn btn-secondary" onclick="exportData()">📥 CSV出力</button>
+                <button class="btn btn-secondary" onclick="exportPDF()">📄 PDF出力</button>
                 <select class="btn" id="priorityFilter">
                     <option value="">全ての優先度</option>
                     <option value="high">高優先度のみ</option>
                     <option value="medium">中優先度のみ</option>
                     <option value="low">低優先度のみ</option>
                 </select>
+                <select class="btn" id="sortBy">
+                    <option value="date">日付順</option>
+                    <option value="score">適合度順</option>
+                    <option value="budget">予算順</option>
+                    <option value="deadline">締切順</option>
+                </select>
+            </div>
+
+            <div class="results-info" id="resultsInfo">
+                <span id="resultCount">0</span>件の案件が見つかりました
             </div>
 
             <div id="entriesContainer">
@@ -284,21 +567,86 @@
             </div>
         </div>
 
+        <!-- アラート設定モーダル -->
+        <div id="alertModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔔 アラート設定</h3>
+                    <button class="close" onclick="closeModal('alertModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="filter-group">
+                        <label>最低適合度スコア</label>
+                        <input type="number" id="alertScore" value="80" min="0" max="100" class="filter-select">
+                    </div>
+                    <div class="filter-group">
+                        <label>対象キーワード（カンマ区切り）</label>
+                        <input type="text" id="alertKeywords" placeholder="データ入力,キッティング,コールセンター" class="filter-select">
+                    </div>
+                    <div class="filter-group">
+                        <label>予算下限（円）</label>
+                        <input type="number" id="alertBudget" value="1000000" min="0" class="filter-select">
+                    </div>
+                    <div class="filter-row">
+                        <button class="btn btn-success" onclick="saveAlertSettings()">💾 保存</button>
+                        <button class="btn btn-secondary" onclick="closeModal('alertModal')">キャンセル</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案件詳細モーダル -->
+        <div id="detailModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📋 案件詳細</h3>
+                    <button class="close" onclick="closeModal('detailModal')">&times;</button>
+                </div>
+                <div class="modal-body" id="detailContent">
+                    <!-- 詳細内容がここに表示される -->
+                </div>
+            </div>
+        </div>
+
+        <!-- フローティングアクションボタン -->
+        <div class="floating-actions">
+            <button class="fab" onclick="openModal('alertModal')" title="アラート設定">
+                🔔
+            </button>
+            <button class="fab" onclick="showSettings()" title="システム設定">
+                ⚙️
+            </button>
+            <button class="fab" onclick="refreshData()" title="データ更新">
+                🔄
+            </button>
+        </div>
+
         <!-- フッター -->
         <div class="footer">
-            <p>入札案件自動収集システム v1.0 | GitHub Actions で24時間365日稼働</p>
+            <p>入札案件自動収集システム v2.0 | GitHub Actions で24時間365日稼働</p>
         </div>
     </div>
+
+    <!-- Chart.js ライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // グローバル変数
         let allEntries = [];
         let filteredEntries = [];
+        let charts = {};
+        let alertSettings = {
+            minScore: 80,
+            keywords: ['データ入力', 'キッティング', 'コールセンター'],
+            minBudget: 1000000
+        };
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             setupEventListeners();
+            loadUserSettings();
+            initializeCharts();
             
             // 自動更新（5分間隔）
             setInterval(refreshData, 5 * 60 * 1000);
@@ -308,9 +656,99 @@
         function setupEventListeners() {
             const searchBox = document.getElementById('searchBox');
             const priorityFilter = document.getElementById('priorityFilter');
+            const sortBy = document.getElementById('sortBy');
+            const sourceFilter = document.getElementById('sourceFilter');
+            const regionFilter = document.getElementById('regionFilter');
+            const dateFilter = document.getElementById('dateFilter');
+            const budgetFilter = document.getElementById('budgetFilter');
             
-            searchBox.addEventListener('input', filterEntries);
-            priorityFilter.addEventListener('change', filterEntries);
+            searchBox.addEventListener('input', applyFilters);
+            priorityFilter.addEventListener('change', applyFilters);
+            sortBy.addEventListener('change', applyFilters);
+            sourceFilter.addEventListener('change', applyFilters);
+            regionFilter.addEventListener('change', applyFilters);
+            dateFilter.addEventListener('change', applyFilters);
+            budgetFilter.addEventListener('change', applyFilters);
+        }
+
+        // チャート初期化
+        function initializeCharts() {
+            const ctx1 = document.getElementById('sourceChart').getContext('2d');
+            const ctx2 = document.getElementById('scoreChart').getContext('2d');
+            const ctx3 = document.getElementById('regionChart').getContext('2d');
+            const ctx4 = document.getElementById('trendChart').getContext('2d');
+
+            charts.sourceChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            charts.scoreChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['高優先度(80+)', '中優先度(60-79)', '低優先度(0-59)'],
+                    datasets: [{
+                        label: '案件数',
+                        data: [0, 0, 0],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            charts.regionChart = new Chart(ctx3, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            charts.trendChart = new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '案件数',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
         }
 
         // データ読み込み
@@ -327,7 +765,9 @@
                 
                 allEntries = data.entries || [];
                 updateStatistics(data.stats || {});
-                filterEntries();
+                populateFilterOptions();
+                applyFilters();
+                updateCharts();
                 
                 // 最終更新時刻を設定
                 if (data.last_updated) {
@@ -638,6 +1078,295 @@
             };
             
             statusText.innerHTML = `<span class="status-indicator status-${status}"></span>${statusTexts[status]}`;
+        }
+
+        // 新しい高度なフィルタリング機能
+        function populateFilterOptions() {
+            const sources = [...new Set(allEntries.map(e => e.organization))].sort();
+            const regions = [...new Set(allEntries.map(e => e.region))].sort();
+            
+            populateSelect('sourceFilter', sources);
+            populateSelect('regionFilter', regions);
+        }
+
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            const currentValue = select.value;
+            
+            // 最初のオプション以外をクリア
+            select.innerHTML = select.children[0].outerHTML;
+            
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                select.appendChild(optionElement);
+            });
+            
+            select.value = currentValue;
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const priority = document.getElementById('priorityFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            const source = document.getElementById('sourceFilter').value;
+            const region = document.getElementById('regionFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const budgetFilter = document.getElementById('budgetFilter').value;
+
+            filteredEntries = allEntries.filter(entry => {
+                // 検索フィルタ
+                if (searchTerm && !entry.title.toLowerCase().includes(searchTerm) && 
+                    !entry.organization.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                // 優先度フィルタ
+                if (priority) {
+                    const level = getPriorityLevel(entry.relevance_score);
+                    if (level !== priority) return false;
+                }
+
+                // データソースフィルタ
+                if (source && entry.organization !== source) return false;
+
+                // 地域フィルタ
+                if (region && entry.region !== region) return false;
+
+                // 期間フィルタ
+                if (dateFilter && !matchesDateFilter(entry, dateFilter)) return false;
+
+                // 予算フィルタ
+                if (budgetFilter && !matchesBudgetFilter(entry, budgetFilter)) return false;
+
+                return true;
+            });
+
+            // ソート
+            sortEntries(filteredEntries, sortBy);
+
+            // 結果表示
+            updateResultCount();
+            renderEntries();
+            updateCharts();
+        }
+
+        function matchesDateFilter(entry, filter) {
+            const entryDate = new Date(entry.created_at || entry.published_date);
+            const now = new Date();
+            
+            switch (filter) {
+                case 'today':
+                    return entryDate.toDateString() === now.toDateString();
+                case 'week':
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    return entryDate >= weekAgo;
+                case 'month':
+                    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    return entryDate >= monthAgo;
+                default:
+                    return true;
+            }
+        }
+
+        function matchesBudgetFilter(entry, filter) {
+            const budget = entry.budget_amount || 0;
+            
+            switch (filter) {
+                case 'small':
+                    return budget < 1000000;
+                case 'medium':
+                    return budget >= 1000000 && budget < 10000000;
+                case 'large':
+                    return budget >= 10000000;
+                default:
+                    return true;
+            }
+        }
+
+        function sortEntries(entries, sortBy) {
+            entries.sort((a, b) => {
+                switch (sortBy) {
+                    case 'score':
+                        return b.relevance_score - a.relevance_score;
+                    case 'budget':
+                        return (b.budget_amount || 0) - (a.budget_amount || 0);
+                    case 'deadline':
+                        return new Date(a.deadline_date || '9999-12-31') - new Date(b.deadline_date || '9999-12-31');
+                    case 'date':
+                    default:
+                        return new Date(b.created_at || b.published_date) - new Date(a.created_at || a.published_date);
+                }
+            });
+        }
+
+        function updateResultCount() {
+            document.getElementById('resultCount').textContent = filteredEntries.length;
+        }
+
+        // チャート更新機能
+        function updateCharts() {
+            updateSourceChart();
+            updateScoreChart();
+            updateRegionChart();
+            updateTrendChart();
+        }
+
+        function updateSourceChart() {
+            const sourceCounts = {};
+            filteredEntries.forEach(entry => {
+                sourceCounts[entry.organization] = (sourceCounts[entry.organization] || 0) + 1;
+            });
+
+            const labels = Object.keys(sourceCounts).slice(0, 6);
+            const data = labels.map(label => sourceCounts[label]);
+
+            charts.sourceChart.data.labels = labels;
+            charts.sourceChart.data.datasets[0].data = data;
+            charts.sourceChart.update();
+        }
+
+        function updateScoreChart() {
+            const high = filteredEntries.filter(e => e.relevance_score >= 80).length;
+            const medium = filteredEntries.filter(e => e.relevance_score >= 60 && e.relevance_score < 80).length;
+            const low = filteredEntries.filter(e => e.relevance_score < 60).length;
+
+            charts.scoreChart.data.datasets[0].data = [high, medium, low];
+            charts.scoreChart.update();
+        }
+
+        function updateRegionChart() {
+            const regionCounts = {};
+            filteredEntries.forEach(entry => {
+                regionCounts[entry.region] = (regionCounts[entry.region] || 0) + 1;
+            });
+
+            const labels = Object.keys(regionCounts);
+            const data = labels.map(label => regionCounts[label]);
+
+            charts.regionChart.data.labels = labels;
+            charts.regionChart.data.datasets[0].data = data;
+            charts.regionChart.update();
+        }
+
+        function updateTrendChart() {
+            const last7Days = [];
+            const counts = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                const count = allEntries.filter(entry => {
+                    const entryDate = new Date(entry.created_at || entry.published_date);
+                    return entryDate.toISOString().split('T')[0] === dateStr;
+                }).length;
+
+                last7Days.push(date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }));
+                counts.push(count);
+            }
+
+            charts.trendChart.data.labels = last7Days;
+            charts.trendChart.data.datasets[0].data = counts;
+            charts.trendChart.update();
+        }
+
+        // モーダル機能
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // フィルタリセット
+        function resetFilters() {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('priorityFilter').value = '';
+            document.getElementById('sortBy').value = 'date';
+            document.getElementById('sourceFilter').value = '';
+            document.getElementById('regionFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            document.getElementById('budgetFilter').value = '';
+            applyFilters();
+        }
+
+        // アラート設定保存
+        function saveAlertSettings() {
+            alertSettings.minScore = parseInt(document.getElementById('alertScore').value);
+            alertSettings.keywords = document.getElementById('alertKeywords').value.split(',').map(k => k.trim());
+            alertSettings.minBudget = parseInt(document.getElementById('alertBudget').value);
+            
+            localStorage.setItem('bidAlertSettings', JSON.stringify(alertSettings));
+            closeModal('alertModal');
+            showAlert('アラート設定を保存しました', 'success');
+        }
+
+        // ユーザー設定読み込み
+        function loadUserSettings() {
+            const saved = localStorage.getItem('bidAlertSettings');
+            if (saved) {
+                alertSettings = JSON.parse(saved);
+                document.getElementById('alertScore').value = alertSettings.minScore;
+                document.getElementById('alertKeywords').value = alertSettings.keywords.join(', ');
+                document.getElementById('alertBudget').value = alertSettings.minBudget;
+            }
+        }
+
+        // アラート表示
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.header').nextSibling);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // PDF出力機能
+        function exportPDF() {
+            showAlert('PDF出力機能は開発中です', 'info');
+        }
+
+        // フィルタプリセット保存
+        function saveFilterPreset() {
+            const preset = {
+                search: document.getElementById('searchBox').value,
+                priority: document.getElementById('priorityFilter').value,
+                source: document.getElementById('sourceFilter').value,
+                region: document.getElementById('regionFilter').value,
+                date: document.getElementById('dateFilter').value,
+                budget: document.getElementById('budgetFilter').value
+            };
+            
+            localStorage.setItem('bidFilterPreset', JSON.stringify(preset));
+            showAlert('フィルタ設定を保存しました', 'success');
+        }
+
+        // システム設定表示
+        function showSettings() {
+            showAlert('システム設定は管理者専用機能です', 'warning');
+        }
+
+        // filterEntries関数をapplyFiltersにリダイレクト（既存コードとの互換性）
+        function filterEntries() {
+            applyFilters();
+        }
+
+        // クリック時にモーダルを閉じる
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         }
     </script>
 </body>
