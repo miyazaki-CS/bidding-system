@@ -38,55 +38,102 @@ class RSSCollector:
         ]
     
     def get_major_municipalities_rss(self) -> List[Dict[str, str]]:
-        """主要自治体のRSS情報を取得"""
+        """主要自治体・政府機関のRSS情報を取得"""
         return [
+            # 中小企業基盤整備機構（確認済み・実在）
             {
-                "name": "東京都",
-                "rss_url": "https://www.metro.tokyo.lg.jp/rss/choutatu.rss",
+                "name": "中小企業基盤整備機構本部",
+                "rss_url": "https://www.smrj.go.jp/org/info/bid/info_bid.xml",
+                "website_url": "https://www.smrj.go.jp/",
+                "type": "agency"
+            },
+            {
+                "name": "中小企業基盤整備機構関東",
+                "rss_url": "https://www.smrj.go.jp/regional_hq/kanto/bid/info_bid.xml",
+                "website_url": "https://www.smrj.go.jp/",
+                "type": "agency"
+            },
+            {
+                "name": "中小企業基盤整備機構九州",
+                "rss_url": "https://www.smrj.go.jp/regional_hq/kyushu/bid/info_bid.xml",
+                "website_url": "https://www.smrj.go.jp/",
+                "type": "agency"
+            },
+            {
+                "name": "中小企業基盤整備機構東北",
+                "rss_url": "https://www.smrj.go.jp/regional_hq/tohoku/bid/info_bid.xml",
+                "website_url": "https://www.smrj.go.jp/",
+                "type": "agency"
+            },
+            {
+                "name": "中小企業基盤整備機構中部",
+                "rss_url": "https://www.smrj.go.jp/regional_hq/chubu/bid/info_bid.xml",
+                "website_url": "https://www.smrj.go.jp/",
+                "type": "agency"
+            },
+            {
+                "name": "中小企業基盤整備機構近畿",
+                "rss_url": "https://www.smrj.go.jp/regional_hq/kinki/bid/info_bid.xml",
+                "website_url": "https://www.smrj.go.jp/",
+                "type": "agency"
+            },
+            # 国土地理院（確認済み・実在）
+            {
+                "name": "国土地理院（物品・サービス）",
+                "rss_url": "https://www.gsi.go.jp/nyusatu1.rdf",
+                "website_url": "https://www.gsi.go.jp/",
+                "type": "government"
+            },
+            {
+                "name": "国土地理院（測量・調査）",
+                "rss_url": "https://www.gsi.go.jp/nyusatu2.rdf",
+                "website_url": "https://www.gsi.go.jp/",
+                "type": "government"
+            },
+            # 産業技術総合研究所（確認済み・実在）
+            {
+                "name": "産業技術総合研究所",
+                "rss_url": "https://www.aist.go.jp/aist_j/procure/supplyinfo/pub/feed/rss.xml",
+                "website_url": "https://www.aist.go.jp/",
+                "type": "research"
+            },
+            # その他政府機関（一般的な報道RSS）
+            {
+                "name": "厚生労働省報道発表",
+                "rss_url": "https://www.mhlw.go.jp/stf/news.rdf",
+                "website_url": "https://www.mhlw.go.jp/",
+                "type": "ministry"
+            },
+            {
+                "name": "総務省報道資料",
+                "rss_url": "https://www.soumu.go.jp/menu_news/news.xml",
+                "website_url": "https://www.soumu.go.jp/",
+                "type": "ministry"
+            },
+            # 地方自治体（都道府県レベル）
+            {
+                "name": "東京都報道発表",
+                "rss_url": "https://www.metro.tokyo.lg.jp/tosei/hodohappyo/press/rss.xml",
                 "website_url": "https://www.metro.tokyo.lg.jp/",
                 "type": "prefecture"
             },
             {
-                "name": "大阪市",
-                "rss_url": "https://www.city.osaka.lg.jp/templates/rss/cmsrss.xml?mode=channel&site_id=0&category_id=1308",
-                "website_url": "https://www.city.osaka.lg.jp/",
-                "type": "city"
-            },
-            {
-                "name": "横浜市",
-                "rss_url": "https://www.city.yokohama.lg.jp/rss/city/shimin.xml",
-                "website_url": "https://www.city.yokohama.lg.jp/",
-                "type": "city"
-            },
-            {
-                "name": "神奈川県",
-                "rss_url": "https://www.pref.kanagawa.jp/rss/all.xml",
-                "website_url": "https://www.pref.kanagawa.jp/",
+                "name": "大阪府報道発表",
+                "rss_url": "https://www.pref.osaka.lg.jp/rss/event.xml",
+                "website_url": "https://www.pref.osaka.lg.jp/",
                 "type": "prefecture"
             },
             {
-                "name": "愛知県",
-                "rss_url": "https://www.pref.aichi.jp/rss/chotatsu.xml",
+                "name": "愛知県報道発表",
+                "rss_url": "https://www.pref.aichi.jp/uploaded/info.xml",
                 "website_url": "https://www.pref.aichi.jp/",
                 "type": "prefecture"
             },
             {
-                "name": "福岡市",
-                "rss_url": "https://www.city.fukuoka.lg.jp/rss/procurement.xml",
-                "website_url": "https://www.city.fukuoka.lg.jp/",
-                "type": "city"
-            },
-            {
-                "name": "札幌市",
-                "rss_url": "https://www.city.sapporo.jp/rss/chotatsu.xml",
-                "website_url": "https://www.city.sapporo.jp/",
-                "type": "city"
-            },
-            {
-                "name": "京都市",
-                "rss_url": "https://www.city.kyoto.lg.jp/rss/procurement.xml",
-                "website_url": "https://www.city.kyoto.lg.jp/",
-                "type": "city"
+                "name": "福岡県報道発表",
+                "rss_url": "https://www.pref.fukuoka.lg.jp/rss/jigyousya.xml",
+                "website_url": "https://www.pref.fukuoka.lg.jp/",
+                "type": "prefecture"
             }
         ]
     
@@ -290,17 +337,42 @@ class RSSCollector:
     def _extract_region(self, organization_name: str) -> str:
         """組織名から地域を抽出"""
         region_mapping = {
+            # 都道府県レベル
             "東京都": "東京都",
-            "大阪市": "大阪府",
-            "横浜市": "神奈川県",
-            "神奈川県": "神奈川県",
+            "大阪府": "大阪府", 
             "愛知県": "愛知県",
+            "福岡県": "福岡県",
+            "神奈川県": "神奈川県",
+            "北海道": "北海道",
+            "京都府": "京都府",
+            "宮崎県": "宮崎県",
+            
+            # 政令指定都市
+            "大阪市": "大阪府",
+            "横浜市": "神奈川県", 
             "福岡市": "福岡県",
             "札幌市": "北海道",
-            "京都市": "京都府"
+            "京都市": "京都府",
+            
+            # 政府機関・独立行政法人
+            "中小企業基盤整備機構本部": "全国",
+            "中小企業基盤整備機構関東": "関東地方",
+            "中小企業基盤整備機構九州": "九州地方", 
+            "中小企業基盤整備機構東北": "東北地方",
+            "中小企業基盤整備機構中部": "中部地方",
+            "中小企業基盤整備機構近畿": "近畿地方",
+            "国土地理院": "全国",
+            "産業技術総合研究所": "全国",
+            "厚生労働省": "全国",
+            "総務省": "全国"
         }
         
-        return region_mapping.get(organization_name, "不明")
+        # 部分マッチング検索
+        for key, value in region_mapping.items():
+            if key in organization_name:
+                return value
+        
+        return "全国"
     
     def _extract_budget(self, text: str) -> Optional[int]:
         """テキストから予算金額を抽出"""
